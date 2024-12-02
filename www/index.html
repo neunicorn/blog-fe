@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    />
+    <title>Nasya-Blog</title>
+  </head>
+  <body>
+    <header>
+      <nav
+        class="navbar is-primary"
+        role="navigation"
+        aria-label="main navigation"
+      >
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <strong class="title is-4">Nasya</strong>
+          </a>
+
+          <a
+            role="button"
+            class="navbar-burger"
+            aria-label="menu"
+            aria-expanded="false"
+            data-target="navbarBasicExample"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item"> Home </a>
+
+            <a class="navbar-item"> Documentation </a>
+
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link"> More </a>
+
+              <div class="navbar-dropdown">
+                <a class="navbar-item"> About </a>
+                <a class="navbar-item is-selected"> Jobs </a>
+                <a class="navbar-item"> Contact </a>
+                <hr class="navbar-divider" />
+                <a class="navbar-item"> Report an issue </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a class="button is-primary">
+                  <strong>Sign up</strong>
+                </a>
+                <a class="button is-light"> Log in </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main style="min-height: 100vh">
+      <section class="section">
+        <div class="container">
+          <div class="heading" id="blog-post"></div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Nasya Blog</strong> Made with love 💖 by
+          <a href="https://jgthms.com">Zulfan</a>.
+        </p>
+      </div>
+    </footer>
+    <script src="vars.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const blogPostContainer = document.getElementById("blog-post");
+
+        function fetchBlogPosts() {
+          fetch(`http://localhost:8080/api/public/posts`)
+            .then((response) => {
+              console.log(response);
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((posts) => {
+              displayBlogPosts(posts);
+            })
+            .catch((err) => {
+              console.error("error fetching blog posts", err);
+              blogPostContainer.innerHTML =
+                '<p class="has-text-danger">Error loading blog posts. Please try again</p>';
+            });
+        }
+
+        function displayBlogPosts(posts) {
+          blogPostContainer.innerHTML = "";
+          posts.forEach((element) => {
+            const postElement = createPostElement(element);
+            blogPostContainer.appendChild(postElement);
+          });
+        }
+
+        function createPostElement(post) {
+          const column = document.createElement("div");
+          column.className = "column is-12";
+
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const cardContent = document.createElement("div");
+          cardContent.className = "card-content";
+
+          const title = document.createElement("p");
+          title.className = "title is-4";
+          title.innerHTML = `<a href='/post.html?slug=${post.slug}'>${post.title}</a>`;
+
+          const excerpt = document.createElement("p");
+          excerpt.className = "subtitle is-6";
+          excerpt.textContent =
+            post.body.split(" ").slice(0, 40).join(" ") + ".....";
+
+          const meta = document.createElement("div");
+          meta.className = "content";
+          meta.innerHTML = `
+            <p>
+                ${post.category?.name} |
+                ${new Date(post.publishedAt * 1000).toLocaleDateString()} |
+                ${post.commentCount} Comment(s)
+            </p>
+          `;
+
+          cardContent.appendChild(title);
+          cardContent.appendChild(excerpt);
+          cardContent.appendChild(meta);
+          card.appendChild(cardContent);
+          column.appendChild(card);
+
+          return column;
+        }
+
+        fetchBlogPosts();
+      });
+    </script>
+  </body>
+</html>
